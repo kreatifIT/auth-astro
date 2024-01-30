@@ -55,7 +55,17 @@ function AstroAuthHandler(prefix: string, options = authConfig) {
 				// Astro's typings are more explicit than @types/set-cookie-parser for sameSite
 				cookies.set(name, value, options as Parameters<(typeof cookies)['set']>[2])
 			})
-			res.headers.delete('Set-Cookie')
+			try {
+			  res.headers.delete('Set-Cookie')
+			} catch(error) {
+			  if (error instanceof TypeError) {
+			    const mutableHeaders = new Headers(res.headers)
+			    mutableHeaders.delete('Set-Cookie')
+			    return new Response(res.body, {
+			      headers: res.headers
+			    })
+			  }
+			}
 		}
 		return res
 	}
